@@ -1,0 +1,44 @@
+import csv
+import skimage.io as io
+import skimage.measure as measure
+
+# Load the image mask in TIFF format
+mask = io.imread('/Users/xiaotianzhang/Desktop/Diff_3rd_100k_7uM_CHIR_mCherry/Mito_Mask/Day1_100k_7uM_1mC_mito_mask.tiff')
+
+# Compute the connected components of the mask
+labeled_mask = measure.label(mask)
+
+# Extract region properties
+props = measure.regionprops(labeled_mask)
+
+# Define the CSV file path
+
+csv_file_path = '/Users/xiaotianzhang/Desktop/Diff_3rd_100k_7uM_CHIR_mCherry/Mito_Mask/Region_Prop_100k_7uM/Day0_3mC.csv'
+
+# Define the CSV header
+header = ['Region', 'Area', 'Centroid', 'BoundingBox', 'Perimeter', 
+          'Eccentricity', 'Orientation','MajorAxisLength','MinorAxisLength']
+
+# Open the CSV file in write mode
+with open(csv_file_path, 'w', newline='') as csv_file:
+    writer = csv.writer(csv_file)
+
+    # Write the header to the CSV file
+    writer.writerow(header)
+
+    # Write region properties to the CSV file
+    for idx, region in enumerate(props):
+        area = region.area
+        centroid = region.centroid
+        bbox = region.bbox
+        perimeter = region.perimeter
+        eccentricity = region.eccentricity
+        orientation = region.orientation
+        major_axis_length = region.major_axis_length
+        minor_axis_length = region.minor_axis_length
+
+        # Create a row for each region
+        row = [idx, area, centroid, bbox, perimeter, eccentricity, orientation, major_axis_length, minor_axis_length]
+
+        # Write the row to the CSV file
+        writer.writerow(row)
