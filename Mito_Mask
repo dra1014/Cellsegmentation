@@ -1,0 +1,37 @@
+from pathlib import Path
+import re
+import tifffile
+import matplotlib,pylab as plt
+import numpy as np
+from cell_analysis_tools.image_processing import normalize, kmeans_threshold
+from cell_analysis_tools.visualization import compare_images, compare_orig_mask_gt_pred
+import seaborn as sns
+import matplotlib as mpl
+from skimage.measure import regionprops
+from skimage.morphology import closing, disk, remove_small_objects, label
+mpl.rcParams['figure.dpi'] = 300
+
+path_dataset = Path("/Users/xiaotianzhang/Desktop/Diff_3rd_Day7-11/Day9_40x_2.5OZ/125k_6uM_Day9/40X_2.5oz_10s")
+list_images = list(path_dataset.glob("*.tif"))
+
+for path_image in list_images[:693]:
+    pass
+    im = tifffile.imread(path_image)
+    plt.imshow(im)
+    plt.show()
+    
+    mask = kmeans_threshold(im, k = 8, n_brightest_clusters = 3)
+    mask_labeled = label(mask)
+    # remove small objects
+    mask_no_small_objects = remove_small_objects(mask_labeled,min_size=3)
+    
+    # compare_images("Original mask", mask_labeled, "Edited mask",  mask_no_small_objects)
+    # compare_orig_mask_gt_pred(im, mask, mask_no_small_objects >0)
+
+    path_output = Path("/Users/xiaotianzhang/Desktop/Diff_3rd_Day7-11/Day9_40x_2.5OZ/125k_6uM_Day9/40X_2.5oz_10s/Mito_Mask")
+
+    filename_mask = path_image.stem + "_mito_mask.tiff"
+
+    tifffile.imwrite(path_output / filename_mask,  mask_no_small_objects.astype(dtype=np.uint32))
+    plt.imshow(mask_no_small_objects)
+    plt.show()
