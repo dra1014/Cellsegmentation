@@ -1,0 +1,32 @@
+import numpy as np
+from skimage import measure
+from PIL import Image
+
+# Load the binary image
+image_path = "/Users/xiaotianzhang/Desktop/150k_8uM_Mito_Day14/9mc.tif"
+image = Image.open(image_path).convert("L")  # Convert to grayscale if needed
+binary_image = np.array(image)
+
+# Perform connected component analysis
+labels = measure.label(binary_image)
+regions = measure.regionprops(labels)
+
+# Set the threshold for minimum area
+threshold = 15
+
+# Compute region areas
+region_areas = np.array([region.area for region in regions])
+
+# Clean small objects by setting pixels below the threshold to 0
+cleaned_image = np.where(
+    np.isin(labels, np.where(region_areas >= threshold)[0] + 1),
+    binary_image,
+    0
+)
+
+# Save the cleaned image in TIFF format
+output_path = "//Users/xiaotianzhang/Desktop/150k_8uM_Mito_Day14/9mc_Mito_Mask.tif"  # Specify the desired output path
+cleaned_image_pil = Image.fromarray(np.uint8(cleaned_image))
+cleaned_image_pil.save(output_path, format='TIFF')
+
+print("Cleaned image saved to", output_path)
