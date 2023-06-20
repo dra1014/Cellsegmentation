@@ -1,0 +1,58 @@
+from pathlib import Path
+import tifffile
+import matplotlib,pylab as plt
+import numpy as np
+import matplotlib as mpl
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage import io, img_as_ubyte
+from skimage.filters import unsharp_mask
+
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage import io, img_as_ubyte
+from skimage.filters import gaussian
+mpl.rcParams['figure.dpi'] = 300
+
+
+
+# Step 0: Load image in specified folder
+path_dataset = Path(r"Z:\skala\Andy\Diff_3rd\Day15_20230610\150k_8uM_Mito_Day15\150k_7uM")
+list_images = list(path_dataset.glob("*.tif"))
+
+for path_image in list_images[:693]:
+    pass
+    im = tifffile.imread(path_image)
+    plt.imshow(im)
+    plt.show()
+
+
+
+# Step 1: Duplicate the image
+duplicate_image = im.copy()
+
+normalized_image = duplicate_image.astype(float) / 255.0
+# Step 2: Apply Gaussian blur
+blurred_image = gaussian(normalized_image, sigma=20, multichannel=True)
+
+# Step 3: Create the mask
+mask = normalized_image - blurred_image
+
+# Step 4: Adjust contrast and add the mask to the original image
+amount = 5 # Adjust the amount to control the strength of the mask
+sharpened_image = normalized_image + amount * mask
+
+
+# Convert the image to 8-bit format for visualization
+sharpened_image = np.clip(sharpened_image, 0, 1)
+sharpened_image = img_as_ubyte(sharpened_image)
+
+# Display the original and sharpened images
+path_output = path_dataset / "Unsharp_Mask"
+
+filename_mask = path_image.stem + "_unsharp_mask.tiff"
+
+tifffile.imwrite(path_output / filename_mask,  sharpened_image.astype(dtype=np.uint32))
+plt.imshow(sharpened_image)
+plt.show()
+
