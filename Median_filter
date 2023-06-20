@@ -1,0 +1,11 @@
+import skimage.io
+from scipy import ndimage
+
+# Load the input image using skimage.io.imread
+input_image = skimage.io.imread(r"Z:\skala\Andy\Diff_3rd\Day15_20230610\150k_8uM_Mito_Day15\150k_7uM\Unsharp_Mask\2mC-001_Cycle00001_Ch1_000001.ome_unsharp_mask_clahe.tiff")
+
+# Apply median filter with a specified kernel size
+median_filtered_image = ndimage.median_filter(input_image, size=3)
+
+# Save the median filtered image using skimage.io.imsave
+skimage.io.imsave(r"Z:\skala\Andy\Diff_3rd\Day15_20230610\150k_8uM_Mito_Day15\150k_7uM\Unsharp_Mask\2mC-001_Cycle00001_Ch1_000001.ome_unsharp_mask_clahe_median.tiff", median_filtered_image)
