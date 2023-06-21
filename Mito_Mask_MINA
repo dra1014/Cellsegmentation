@@ -1,0 +1,113 @@
+from pathlib import Path
+import tifffile
+import matplotlib,pylab as plt
+import numpy as np
+import matplotlib as mpl
+from skimage import io, img_as_ubyte
+from skimage.filters import gaussian
+import skimage.io
+from skimage import exposure
+from scipy import ndimage
+from skimage import filters
+from skimage import measure
+from PIL import Image
+
+mpl.rcParams['figure.dpi'] = 300
+
+
+
+# Step 0: Load image in specified folder
+path_dataset = Path(r"Z:\skala\Andy\Diff_3rd\Day15_20230610\150k_8uM_Mito_Day15\Test")
+list_images = list(path_dataset.glob("*.tif"))
+
+for path_image in list_images[:693]:
+    pass
+    im = tifffile.imread(path_image)
+    plt.imshow(im)
+    plt.show()
+
+
+#################Unsharp_Mask
+# Step 1: Duplicate the image
+duplicate_image = im.copy()
+
+normalized_image = duplicate_image.astype(float) / 255.0
+# Step 2: Apply Gaussian blur
+blurred_image = gaussian(normalized_image, sigma=20, multichannel=True)
+
+# Step 3: Create the mask
+mask = normalized_image - blurred_image
+
+# Step 4: Adjust contrast and add the mask to the original image
+amount = 5 # Adjust the amount to control the strength of the mask
+sharpened_image = normalized_image + amount * mask
+
+
+# Convert the image to 8-bit format for visualization
+sharpened_image = np.clip(sharpened_image, 0, 1)
+sharpened_image = img_as_ubyte(sharpened_image)
+
+#################CLAHE
+
+# Convert the input image to float64
+input_image = skimage.img_as_float64(sharpened_image)
+
+# Scale the image intensity to the range [0, 1]
+input_image = exposure.rescale_intensity(input_image)
+
+# Apply CLAHE
+clahe_image = exposure.equalize_adapthist(input_image, clip_limit=0.03)
+
+# Scale the CLAHE image to the range [0, 1]
+clahe_image = exposure.rescale_intensity(clahe_image)
+
+# Convert the CLAHE image to uint8 for visualization
+clahe_image = skimage.img_as_ubyte(clahe_image)
+
+#################median_filter
+median_filtered_image = ndimage.median_filter(clahe_image, size=3)
+
+
+#################autothreshold
+# Convert the input image to grayscale if necessary
+if median_filtered_image.ndim > 2:
+    median_filtered_image = skimage.color.rgb2gray(median_filtered_image)
+
+# Apply Otsu thresholding
+threshold_value = filters.threshold_otsu(median_filtered_image)
+binary_image = median_filtered_image > threshold_value
+
+#################remove small objectives
+new_binary_image = np.array(binary_image)
+
+
+# Perform component analysis
+labels = measure.label(new_binary_image)
+regions = measure.regionprops(labels)
+
+# Set the threshold for minimum area
+threshold = 50
+
+# Compute region areas
+region_areas = np.array([region.area for region in regions])
+
+# Clean small objects by setting pixels below the threshold to 0
+cleaned_image = np.where(
+    np.isin(labels, np.where(region_areas >= threshold)[0] + 1),
+    binary_image,
+    0
+)
+
+
+cleaned_image_pil = Image.fromarray(np.uint8(cleaned_image))
+
+
+# Display the original and sharpened images
+path_output = path_dataset / "Mito_Mask"
+
+filename_mask = path_image.stem + "_mito_mask.tiff"
+
+tifffile.imwrite(path_output / filename_mask,  cleaned_image.astype(dtype=np.uint32))
+plt.imshow(cleaned_image)
+plt.show()
+
