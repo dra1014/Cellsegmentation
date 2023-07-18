@@ -1,32 +1,41 @@
 import numpy as np
 from skimage import measure
 from PIL import Image
+import os
 
-# Load the binary image
-image_path = "/Users/xiaotianzhang/Desktop/150k_8uM_Mito_Day14/9mc.tif"
-image = Image.open(image_path).convert("L")  # Convert to grayscale if needed
-binary_image = np.array(image)
+# Folder path containing the binary images
+folder_path = r"Z:\skala\Andy\Replating_P67_ADS\Mask\Day7_50nM_MitoOrange\Mask\MitoTracker_Orange"
 
-# Perform connected component analysis
-labels = measure.label(binary_image)
-regions = measure.regionprops(labels)
+# Get a list of all TIFF files in the folder
+image_files = [f for f in os.listdir(folder_path) if f.endswith(".tif")]
 
 # Set the threshold for minimum area
-threshold = 15
+threshold = 20
 
-# Compute region areas
-region_areas = np.array([region.area for region in regions])
+# Process each image
+for image_file in image_files:
+    # Load the binary image
+    image_path = os.path.join(folder_path, image_file)
+    image = Image.open(image_path).convert("L")
+    binary_image = np.array(image)
 
-# Clean small objects by setting pixels below the threshold to 0
-cleaned_image = np.where(
-    np.isin(labels, np.where(region_areas >= threshold)[0] + 1),
-    binary_image,
-    0
-)
+    # Perform connected component analysis
+    labels = measure.label(binary_image)
+    regions = measure.regionprops(labels)
 
-# Save the cleaned image in TIFF format
-output_path = "//Users/xiaotianzhang/Desktop/150k_8uM_Mito_Day14/9mc_Mito_Mask.tif"  # Specify the desired output path
-cleaned_image_pil = Image.fromarray(np.uint8(cleaned_image))
-cleaned_image_pil.save(output_path, format='TIFF')
+    # Compute region areas
+    region_areas = np.array([region.area for region in regions])
 
-print("Cleaned image saved to", output_path)
+    # Clean small objects by setting pixels below the threshold to 0
+    cleaned_image = np.where(
+        np.isin(labels, np.where(region_areas >= threshold)[0] + 1),
+        binary_image,
+        0
+    )
+
+    # Save the cleaned image in TIFF format
+    output_path = os.path.join(folder_path, "Clear", image_file)
+    cleaned_image_pil = Image.fromarray(np.uint8(cleaned_image))
+    cleaned_image_pil.save(output_path, format='TIFF')
+
+    print("Cleaned image saved to", output_path)
