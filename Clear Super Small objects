@@ -4,13 +4,17 @@ from PIL import Image
 import os
 
 # Folder path containing the binary images
-folder_path = r"Z:\skala\Andy\Replating_P67_ADS\Mask\Day7_50nM_MitoOrange\Mask\MitoTracker_Orange"
+folder_path = r"Z:\skala\Andy\20230810\A5_Day15_MitoTrackerO_Reseeding\ZSeries-05122017-1148-015\Mask\Mito_Mask"
+
+# Create the "Clear" subdirectory if it doesn't exist
+clear_path = os.path.join(folder_path, "Clear")
+os.makedirs(clear_path, exist_ok=True)
 
 # Get a list of all TIFF files in the folder
 image_files = [f for f in os.listdir(folder_path) if f.endswith(".tif")]
 
 # Set the threshold for minimum area
-threshold = 20
+threshold = 5
 
 # Process each image
 for image_file in image_files:
@@ -33,9 +37,12 @@ for image_file in image_files:
         0
     )
 
-    # Save the cleaned image in TIFF format
-    output_path = os.path.join(folder_path, "Clear", image_file)
+    # Save the cleaned image in TIFF format within the "Clear" subdirectory
+    output_path = os.path.join(clear_path, image_file)
     cleaned_image_pil = Image.fromarray(np.uint8(cleaned_image))
     cleaned_image_pil.save(output_path, format='TIFF')
 
     print("Cleaned image saved to", output_path)
+
+
+
