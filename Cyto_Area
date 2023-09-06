@@ -1,0 +1,36 @@
+import csv
+import skimage.io as io
+import skimage.measure as measure
+
+# Load the image mask in TIFF format
+mask = io.imread(r"Z:\skala\Andy\20230810\A5_Day15_MitoTrackerO_Reseeding\ZSeries-05122017-1148-015\Mask\Cyto_Mask\Raw_NAD(P)H\Mask\Clear\25.tif")
+
+# Compute the connected components of the mask
+labeled_mask = measure.label(mask)
+
+# Extract region properties
+props = measure.regionprops(labeled_mask)
+
+# Define the CSV file path
+
+csv_file_path = r"Z:\skala\Andy\20230810\A5_Day15_MitoTrackerO_Reseeding\ZSeries-05122017-1148-015\Mask\Cyto_Mask\Raw_NAD(P)H\Mask\Clear\25.csv"
+
+# Define the CSV header
+header = ['Area']
+
+# Open the CSV file in write mode
+with open(csv_file_path, 'w', newline='') as csv_file:
+    writer = csv.writer(csv_file)
+
+    # Write the header to the CSV file
+    writer.writerow(header)
+
+    # Write region properties to the CSV file
+    for idx, region in enumerate(props):
+        area = region.area
+
+        # Create a row for each region
+        row = [area]
+
+        # Write the row to the CSV file
+        writer.writerow(row)
