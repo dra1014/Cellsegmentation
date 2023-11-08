@@ -1,0 +1,48 @@
+"""
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.linear_model import LinearRegression
+
+# Read data from CSV file
+file_path = r"C:\Users\azhang\OneDrive - Wisconsin Institutes for Discovery\Documents\%Mito_Cyto.csv"
+data = pd.read_csv(file_path)
+
+# Extracting data from specific columns (excluding 'Day0')
+your_data = [data['Day8'], data['Day10'], data['Day15']]
+
+# Calculate the means of each column
+column_means = [col.mean() for col in your_data]
+
+# Create a DataFrame with column indices and their means
+mean_data = pd.DataFrame({'Column': range(len(your_data)), 'Mean': column_means})
+
+# Create a plot
+plt.figure(figsize=(8, 6))
+
+# Create the boxplot
+sns.boxplot(data=your_data, orient='v')
+
+# Fit a linear regression model to calculate R-squared
+x = mean_data['Column'].values.reshape(-1, 1)
+y = mean_data['Mean'].values.reshape(-1, 1)
+model = LinearRegression()
+model.fit(x, y)
+r_squared = model.score(x, y)
+sns.regplot(x='Column', y='Mean', data=mean_data, scatter=False, color='red', label=f'Regression Line (R² = {r_squared:.3f})')
+
+# Get the coefficients (slope and intercept)
+slope = model.coef_[0][0]
+intercept = model.intercept_[0]
+
+# Plotting the equation of the line (y = mx + c)
+
+# Display R-squared value
+#r_squared_text = f'R² = {r_squared:.3f}'
+#plt.text(0.1, 0.8, r_squared_text, fontsize=10, transform=plt.gca().transAxes)
+
+plt.legend()
+plt.xlabel('Column')
+plt.ylabel('Mean Values')
+plt.title('Mito Area/Cyto Area')
+plt.show()
