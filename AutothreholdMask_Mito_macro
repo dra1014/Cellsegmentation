@@ -1,0 +1,40 @@
+// Define the directory path
+dirPath = "Z:/skala/Andy/Test_ROISum_SC_Mito/MiNA_Test/SC_label/Binary_Test/";
+
+// Define the pattern for file names
+fileNamePattern = "Result of 6_10seconds-012_Cycle00001_Ch1_000001_";
+
+// Get a list of files in the directory
+list = getFileList(dirPath);
+nFiles = lengthOf(list);
+
+// Loop through each file in the directory
+for (i = 0; i < nFiles; i++) {
+    // Check if the file name matches the pattern
+    if (startsWith(list[i], fileNamePattern)) {
+        // Construct the full path to the file
+        filePath = dirPath + list[i];
+
+        // Open the image
+        open(filePath);
+
+        // Check if there are open images
+        if (nImages > 0) {
+            // Process the opened image
+              setOption("ScaleConversions", true);
+              run("8-bit");
+          
+            run("Unsharp Mask...", "radius=2 mask=0.50");
+            
+            // Corrected line to use the filePath variable
+            run("Enhance Local Contrast (CLAHE)", "blocksize=256 histogram=512 maximum=6 mask=[filePath]");
+            
+            run("Auto Threshold", "method=Otsu white");
+            // Save the processed image
+            saveAs("Tiff", filePath.replace(".tif", "_MitoMask.tif"));
+
+            // Close the opened image
+            close();
+        }
+    }
+}
