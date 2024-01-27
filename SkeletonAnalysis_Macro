@@ -1,8 +1,5 @@
 // Define the directory path
-dirPath = "Z:/skala/Andy/Test_ROISum_SC_Mito/MiNA_Test/SC_label/Mito/Output1";
-
-// Define the pattern for file names
-fileNamePattern = "labeled_image_";
+dirPath = "Z:/skala/Andy/SingleCell_Mito_Morphology/20231006_Day8_A2/MitoMask/Clear/";
 
 // Get a list of files in the directory
 list = getFileList(dirPath);
@@ -10,34 +7,30 @@ nFiles = lengthOf(list);
 
 // Loop through each file in the directory
 for (i = 0; i < nFiles; i++) {
-    // Check if the file name matches the pattern
-    if (startsWith(list[i], fileNamePattern)) {
-        // Construct the full path to the file
-        filePath = dirPath + "/" + list[i];
+    // Construct the full path to the file
+    filePath = dirPath + "/" + list[i];
 
-        // Open the image
-        open(filePath);
+    // Open the image
+    open(filePath);
 
-        // Process the opened image
-        selectImage(list[i]);
-        run("Median...", "radius=1");
-        setOption("ScaleConversions", true);
-        run("8-bit");
-        run("Skeletonize (2D/3D)");
-        run("Analyze Skeleton (2D/3D)", "prune=[shortest branch] prune_0 calculate show display");
+    // Process the opened image
+    selectImage(list[i]);
+    run("Median...", "radius=1");
+    setOption("ScaleConversions", true);
+    run("8-bit");
+    run("Skeletonize (2D/3D)");
+    run("Analyze Skeleton (2D/3D)", "prune=[shortest branch] prune_0 calculate show display");
 
-        // Save branch information as CSV
-        Table.rename("Branch information", "Branch information-" + i);
-        saveAs("Results", filePath.replace(".tif", "_Branch_information-" + i + ".csv"));
+    // Save branch information as CSV
+    Table.rename("Branch information", "Branch information-" + i);
+    saveAs("Results", filePath.replace(".tif", "_Branch_information-" + i + ".csv"));
 
-        // Save results as CSV
-        Table.rename("Results", "Results-" + i);
-        saveAs("Results", filePath.replace(".tif", "_Results-" + i + ".csv"));
+    // Save results as CSV
+    Table.rename("Results", "Results-" + i);
+    saveAs("Results", filePath.replace(".tif", "_Results-" + i + ".csv"));
 
-        // Close the opened image
-        close();
-        close();
-        close();
-     
-    }
+    // Close the opened image
+    close();
+    close();
+    close();
 }
